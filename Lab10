@@ -50,13 +50,24 @@ def push(b):
             label["text"] = "Игра окончена!"
             stop_game()
         turn += 1
+def new_game():
+    global game
+    global game_left
+    global turn
+    game = [None] * 9
+    game_left = list(range(9))
+    turn = 0
+    label["text"] = "Игра крестики-нолики"
+    for button in buttons:
+        button.config(text="", bg="SystemButtonFace", state="normal")
+
 game = [None] * 9 #Данные о ходах (где крестики, где нолики)
 game_left = list(range(9)) #используем список, чтобы понимать, какие ячейки остались в игре
 turn = 0
 
 root = Tk()
 label = Label(width=20, text="Игра крестики-нолики", font=("Arial", 20, "bold"))
-buttons = [Button(width=9, height=3, font=("Arial", 28, "bold"), bg = "MediumOrchid1", command=lambda x=i: push(x)) for i in range(9)] #Экземпляр класса Button
+buttons = [Button(width=9, height=3, font=("Arial", 28, "bold"), bg = "white", command=lambda x=i: push(x)) for i in range(9)] #Экземпляр класса Button
 
 label.grid(row=0, column=0, columnspan=3)
 row = 1
@@ -67,5 +78,8 @@ for i in range(9):
     if col == 3:
         row += 1
         col = 0
+
+new_game_button = Button(text="Новая игра", font=("Arial", 14), command=new_game)
+new_game_button.grid(row=row, columnspan=3)
 
 root.mainloop()
