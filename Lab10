@@ -30,7 +30,7 @@ def push(b):
         try:
             t = random.choice(game_left)
         except IndexError:
-            label["text"] = "Игра окончена!"
+            label["text"] = "Ничья!"
             stop_game()
 
     game[t] = "0"
@@ -47,7 +47,7 @@ def push(b):
         if (len(game_left) > 1):
             game_left.remove(t)
         else:
-            label["text"] = "Игра окончена!"
+            label["text"] = "Ничья!"
             stop_game()
         turn += 1
 def new_game():
