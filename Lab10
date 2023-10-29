@@ -1,85 +1,86 @@
 from tkinter import *
-import random, time
-
-def stop_game():
-    global game_left
-    for item in game_left:
-        buttons[item].config(bg="thistle1", state="disabled")
-
-def win(n):
-    global game
-    if (game[0] == n and game[1] == n and game[2] == n) or (game[3] == n and game[4] == n and game[5] == n) or (game[6] == n and game[7] == n and game[8] == n) \
-            or (game[0] == n and game[3] == n and game[6] == n) or (game[1] == n and game[4] == n and game[7] == n) or (game[2] == n and game[5] == n and game[8] == n) \
-            or (game[0] == n and game[4] == n and game[8] == n) or (game[2] == n and game[4] == n and game[6] == n):
-        return True
-
-def push(b):
-    global game
-    global game_left
-    global turn
-    game[b] = "X"
-    buttons[b].config(text="X", bg="thistle1", state="disabled")
-    game_left.remove(b)  # "выбрасываем" ход b
-    if b == 4 and turn == 0:
-        t = random.choice(game_left)
-    elif b != 4 and turn == 0:
-        t = 4
-    if turn > 0:
-        t = 8 - b
-    if t not in game_left:
-        try:
-            t = random.choice(game_left)
-        except IndexError:
-            label["text"] = "Ничья!"
-            stop_game()
-
-    game[t] = "0"
-    time.sleep(0.5)
-    buttons[t].config(text="0", bg="thistle1", state="disabled")
-
-    if win("X"):
-        label["text"] = "Вы победили!"
-        stop_game()
-    elif win("0"):
-        label["text"] = "Вы проиграли"
-        stop_game()
-    else:
-        if (len(game_left) > 1):
-            game_left.remove(t)
-        else:
-            label["text"] = "Ничья!"
-            stop_game()
-        turn += 1
-def new_game():
-    global game
-    global game_left
-    global turn
-    game = [None] * 9
-    game_left = list(range(9))
-    turn = 0
-    label["text"] = "Игра крестики-нолики"
-    for button in buttons:
-        button.config(text="", bg="SystemButtonFace", state="normal")
-
-game = [None] * 9 #Данные о ходах (где крестики, где нолики)
-game_left = list(range(9)) #используем список, чтобы понимать, какие ячейки остались в игре
-turn = 0
-
+import random
 root = Tk()
-label = Label(width=20, text="Игра крестики-нолики", font=("Arial", 20, "bold"))
-buttons = [Button(width=9, height=3, font=("Arial", 28, "bold"), bg = "white", command=lambda x=i: push(x)) for i in range(9)] #Экземпляр класса Button
+root.title('Крестики-нолики')
+game_run = True #False при при завершении игры, чтобы запретить делать ходы когда уже выявлен победитель
+field = []  #двумерный список, в котором будут храниться кнопки игрового поля
+cross_count = 0 #кол-во крестиков на поле
+def new_game():
+    for row in range(3):
+        for col in range(3):
+            field[row][col]['text'] = ' '
+            field[row][col]['background'] = 'DeepPink2'
+    global game_run
+    game_run = True
+    global cross_count
+    cross_count = 0
+def click(row, col):
+    if game_run and field[row][col]['text'] == ' ':
+        field[row][col]['text'] = 'X'
+        global cross_count
+        cross_count += 1
+        check_win('X')
+        if game_run and cross_count < 5:
+            computer_move()
+            check_win('O')
+def check_win(smb): #проверка выигрыша
+    for n in range(3):
+        check_line(field[n][0], field[n][1], field[n][2], smb)
+        check_line(field[0][n], field[1][n], field[2][n], smb)
+    check_line(field[0][0], field[1][1], field[2][2], smb)
+    check_line(field[2][0], field[1][1], field[0][2], smb)
 
-label.grid(row=0, column=0, columnspan=3)
-row = 1
-col = 0
-for i in range(9):
-    buttons[i].grid(row=row, column=col)
-    col += 1
-    if col == 3:
-        row += 1
-        col = 0
+def check_line(a1,a2,a3,smb):
+    if a1['text'] == smb and a2['text'] == smb and a3['text'] == smb:
+        a1['background'] = a2['background'] = a3['background'] = 'lawn green'
+        global game_run
+        game_run = False
+def can_win(a1,a2,a3,smb):
+    res = False
+    if a1['text'] == smb and a2['text'] == smb and a3['text'] == ' ':
+        a3['text'] = 'O'
+        res = True
+    if a1['text'] == smb and a2['text'] == ' ' and a3['text'] == smb:
+        a2['text'] = 'O'
+        res = True
+    if a1['text'] == ' ' and a2['text'] == smb and a3['text'] == smb:
+        a1['text'] = 'O'
+        res = True
+    return res
 
-new_game_button = Button(text="Новая игра", font=("Arial", 14), command=new_game)
-new_game_button.grid(row=row, columnspan=3)
-
+def computer_move():
+    for n in range(3):
+        if can_win(field[n][0], field[n][1], field[n][2], 'O'):
+            return
+        if can_win(field[0][n], field[1][n], field[2][n], 'O'):
+            return
+    if can_win(field[0][0], field[1][1], field[2][2], 'O'):
+        return
+    if can_win(field[2][0], field[1][1], field[0][2], 'O'):
+        return
+    for n in range(3):
+        if can_win(field[n][0], field[n][1], field[n][2], 'X'):
+            return
+        if can_win(field[0][n], field[1][n], field[2][n], 'X'):
+            return
+    if can_win(field[0][0], field[1][1], field[2][2], 'X'):
+        return
+    if can_win(field[2][0], field[1][1], field[0][2], 'X'):
+        return
+    while True:
+        row = random.randint(0, 2)
+        col = random.randint(0, 2)
+        if field[row][col]['text'] == ' ':
+            field[row][col]['text'] = 'O'
+            break
+for row in range(3):
+    line = []
+    for col in range(3):
+        button = Button(root, text=' ', width=4, height=2, font=('Verdana', 20, 'bold'),
+                        background='DeepPink2', command=lambda row=row, col=col: click(row,col))
+        button.grid(row=row, column=col, sticky='nsew')
+        line.append(button)
+    field.append(line)
+new_button = Button(root, text='Новая игра', command=new_game)
+new_button.grid(row=3, column=0, columnspan=3, sticky='nsew')
 root.mainloop()
