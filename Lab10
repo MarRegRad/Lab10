@@ -1,5 +1,6 @@
 from tkinter import *
 import random
+from tkinter import messagebox
 root = Tk()
 root.title('Крестики-нолики')
 game_run = True #False при при завершении игры, чтобы запретить делать ходы когда уже выявлен победитель
@@ -23,12 +24,19 @@ def click(row, col):
         if game_run and cross_count < 5:
             computer_move()
             check_win('O')
-def check_win(smb): #проверка выигрыша
+def check_win(smb):
     for n in range(3):
         check_line(field[n][0], field[n][1], field[n][2], smb)
         check_line(field[0][n], field[1][n], field[2][n], smb)
     check_line(field[0][0], field[1][1], field[2][2], smb)
     check_line(field[2][0], field[1][1], field[0][2], smb)
+    if not game_run:
+        if smb == 'X':
+            show_message("Победил игрок X!")
+        else:
+            show_message("Победил игрок O!")
+    elif cross_count == 5:
+        show_message("Ничья!")
 
 def check_line(a1,a2,a3,smb):
     if a1['text'] == smb and a2['text'] == smb and a3['text'] == smb:
@@ -73,6 +81,10 @@ def computer_move():
         if field[row][col]['text'] == ' ':
             field[row][col]['text'] = 'O'
             break
+
+def show_message(message):
+    messagebox.showinfo("Результат игры", message)
+
 for row in range(3):
     line = []
     for col in range(3):
@@ -81,6 +93,6 @@ for row in range(3):
         button.grid(row=row, column=col, sticky='nsew')
         line.append(button)
     field.append(line)
-new_button = Button(root, text='Новая игра', command=new_game)
+new_button = Button(root, text='Новая игра', command=new_game, bg="green")
 new_button.grid(row=3, column=0, columnspan=3, sticky='nsew')
 root.mainloop()
